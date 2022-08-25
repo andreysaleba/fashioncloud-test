@@ -1,16 +1,22 @@
 const createError = require("http-errors");
 const express = require("express");
-const logger = require("morgan");
 const dotenv = require("dotenv");
+const mongoose = require("mongoose");
+const logger = require("morgan");
 
 const cacheRouter = require("./routes/cache");
-const mongoose = require("mongoose");
+const { isDevelopmentEnvironment } = require("./utils/environment");
 
 dotenv.config();
 const app = express();
 
 async function initApp () {
-  app.use(logger("dev"));
+  if (isDevelopmentEnvironment()) {
+    app.use(logger("dev"));
+  } else {
+    app.use(logger("tiny"));
+  }
+
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
 

@@ -1,25 +1,57 @@
-var express = require("express");
-var router = express.Router();
+const express = require("express");
+const CacheEntryService = require("../services/cacheEntryService");
+const { mapCacheEntriesObjectsToStrings } = require("../utils/functions");
 
-/* GET home page. */
-router.get("/:key", function (req, res, next) {
-  res.json({ title: "Express 1" });
+const router = express.Router();
+
+/*
+* route for getting cached value by given cache key
+* @pathparam - key - cache key
+* @returns cache entry value in form of { value: <cache entry string value> }
+* */
+router.get("/:key", async function (req, res, next) {
+  const { value } = await CacheEntryService.getCacheEntryByKey(req.params.key);
+  res.json({ value });
 });
 
-router.get("/", function (req, res, next) {
-  res.json({ title: "Express 2" });
+/*
+* route for getting all existing cache keys
+* @returns cache entry values in form of { value: [ <cache entry string value 1>, <cache entry string value 2>, ... ] }
+* */
+router.get("/", async function (req, res, next) {
+  const serviceCallResult = await CacheEntryService.getAllCacheEntries();
+  const cacheKeys = mapCacheEntriesObjectsToStrings(serviceCallResult);
+  res.json({ value: cacheKeys });
 });
 
-router.post("/:key", function (req, res, next) {
-  res.json({ title: "Express 2" });
+/*
+* route for creating new or updating existing cache data
+* @pathparam - key - cache key
+* @bodyparam - { value: <cache string value> }
+* @returns cache entry value in form of { value: <cache entry string value> }
+* */
+router.post("/:key", async function (req, res, next) {
+  const serviceResultCall = await CacheEntryService.createOrUpdateCacheEntryForKey(req.params.key, req.body.value);
+  res.json({ value: req.body.value });
 });
 
-router.delete("/:key", function (req, res, next) {
-  res.json({ title: "Express 2" });
+/*
+* route for deleting existing cache entry
+* @pathparam - key - cache key
+* @returns { ok: true }
+* */
+router.delete("/:key", async function (req, res, next) {
+  const serviceCallResult = await CacheEntryService.deleteOneCacheEntry(req.params.key);
+  res.json({ ok: !!serviceCallResult });
 });
 
-router.delete("/", function (req, res, next) {
-  res.json({ title: "Express 2" });
+/*
+* route for deleting existing cache entry
+* @returns { ok: true }
+* */
+router.delete("/", async function (req, res, next) {
+  const serviceCallResult = await CacheEntryService.deleteAllCacheEntries();
+  res.json({ ok: !!serviceCallResult });
 });
 
 module.exports = router;

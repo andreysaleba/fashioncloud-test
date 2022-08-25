@@ -1,4 +1,10 @@
-// thanks to https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+/**
+ *
+ * @param {number} length - Length with the 32 as default value
+ * @return {string} Returns random alphanumeric string
+ *
+ * thanks to https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+ */
 function randomString (length = 32) {
   let result = "";
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -9,6 +15,11 @@ function randomString (length = 32) {
   return result;
 }
 
+/**
+ *
+ * @param {CacheEntry[]} cacheEntries - Cache entries
+ * @return {String[]} Returns keys for given cache entries
+ */
 function mapCacheEntriesObjectsToStrings (cacheEntries) {
   return cacheEntries.map(cacheEntry => cacheEntry.key);
 }

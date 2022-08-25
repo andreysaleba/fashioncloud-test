@@ -28,6 +28,7 @@ const cacheEntrySchema = new mongoose.Schema({
   timestamps: true,
   methods: {
     resetTtl: function () {
+      console.info("Resetting ttl for cache key", this.key);
       this.ttl = Date.now() + DEFAULT_CACHE_EXPIRATION_VALUE;
       return this.save();
     }

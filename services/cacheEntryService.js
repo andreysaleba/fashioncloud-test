@@ -18,13 +18,15 @@ class CacheEntryService {
    * 4. Resets ttl to default value.
    */
   static async createOrUpdateCacheEntryForKey (key, value) {
+    console.info("Upserting cache entry with the key", key, "and value", value);
     const result = await CacheEntry
       .updateOne({ key }, { key, value }, { upsert: true })
       .exec();
     if (result.upsertedCount > 0) {
+      console.info("Did not found cache entry with the key", key);
       await this.deleteOldestCacheEntriesIfLimitIsReached();
     }
-    const cacheEntry = await CacheEntry.findOne({ key });
+    const cacheEntry = await CacheEntry.findOne({ key }).exec();
     await cacheEntry.resetTtl();
     return cacheEntry;
   }
@@ -35,6 +37,7 @@ class CacheEntryService {
    * Deletes all existing cache entries
    * */
   static deleteAllCacheEntries () {
+    console.info("Deleting all cache entries");
     return CacheEntry.deleteMany().exec();
   }
 
@@ -50,12 +53,15 @@ class CacheEntryService {
    * 4. Remove cache entries.
    */
   static async deleteOldestCacheEntriesIfLimitIsReached () {
+    console.info("Deleting oldest cache entries if limit is reached");
     const totalCount = await CacheEntry.countDocuments();
+    console.info("Document count is", totalCount);
     if (totalCount > CACHED_OBJECTS_LIMIT) {
       const amountToDelete = totalCount - CACHED_OBJECTS_LIMIT;
-      const cacheEntriesToDelete = await CacheEntry.find().sort({ ttl: 1 }).limit(amountToDelete);
+      console.info("Deleting", amountToDelete, "documents");
+      const cacheEntriesToDelete = await CacheEntry.find().sort({ ttl: 1 }).limit(amountToDelete).exec();
       const idsToDelete = cacheEntriesToDelete.map(cacheEntry => cacheEntry._id);
-      return CacheEntry.deleteMany({ _id: idsToDelete });
+      return CacheEntry.deleteMany({ _id: idsToDelete }).exec();
     }
   }
 
@@ -67,6 +73,7 @@ class CacheEntryService {
    * Deletes one cache entry with the given key
    * */
   static deleteOneCacheEntry (key) {
+    console.info("Deleting one cache entry with the key", key);
     return CacheEntry.deleteOne({ key }).exec();
   }
 
@@ -85,13 +92,15 @@ class CacheEntryService {
    *    b. Calls method to delete oldest cache entries if limit is reached.
    */
   static async getCacheEntryByKey (key) {
-    const cacheEntryInStorage = await CacheEntry.findOne({ key });
+    const cacheEntryInStorage = await CacheEntry.findOne({ key }).exec();
     if (cacheEntryInStorage) {
       console.info("Cache hit for key", key, cacheEntryInStorage);
       if (cacheEntryInStorage.valid) {
+        console.info("Valid cache for the key", key, "found");
         await cacheEntryInStorage.resetTtl();
         return cacheEntryInStorage;
       } else {
+        console.info("Invalid cache for the key", key, "found");
         const updatedCacheEntries = await this.regenerateCacheEntriesIfExpired(cacheEntryInStorage);
         return updatedCacheEntries[0];
       }
@@ -118,7 +127,8 @@ class CacheEntryService {
    * Returns all existing cache entries
    */
   static async getAllCacheEntries () {
-    const allCacheEntries = await CacheEntry.find();
+    console.info("Getting all cache entries");
+    const allCacheEntries = await CacheEntry.find().exec();
     return this.regenerateCacheEntriesIfExpired(allCacheEntries);
   }
 
@@ -130,6 +140,7 @@ class CacheEntryService {
    * Calls regenerateManyCacheEntriesIfNeeeded and wraps single cache entry parameter into array
    */
   static regenerateCacheEntriesIfExpired (cacheEntriesOrOneEntry) {
+    console.info("Regenerating cache entries if needed");
     let cacheEntries = cacheEntriesOrOneEntry;
     if (!Array.isArray(cacheEntriesOrOneEntry)) {
       cacheEntries = [ cacheEntries ];
@@ -144,13 +155,16 @@ class CacheEntryService {
    * @return {Promise<CacheEntry[]>>} Returns promise with the updated cache entries
    *
    * Regenerates cache entries values if they are expired
-   * 1. Splits given cache entries array into two array
+   * 1. Splits given cache entries array into two array: one with the valid cache entries, another one - with the invalid ones.
+   * 2. For invalid cache entries regenerates new random values and resets ttl.
+   * 3. For valid ones just resets ttl.
    */
   static async regenerateManyCacheEntriesIfNeeeded (cacheEntries) {
     const validCacheEntries = [];
     const invalidCacheEntries = [];
     cacheEntries.forEach(cacheEntry => cacheEntry.valid
       ? validCacheEntries.push(cacheEntry) : invalidCacheEntries.push(cacheEntry));
+    console.info("Found valid cache entries", validCacheEntries, "and invalid cache entries", invalidCacheEntries);
 
     const invalidResult = await Promise.all(
       invalidCacheEntries.map(cacheEntry => {

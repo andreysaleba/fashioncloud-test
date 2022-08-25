@@ -71,6 +71,8 @@ class CacheEntryService {
    * @returns {Promise<DeleteResult>} Returns promise with the delete result
    *
    * Deletes one cache entry with the given key
+   *
+   * todo should return 404 from router in case cache entry is missing
    * */
   static deleteOneCacheEntry (key) {
     console.info("Deleting one cache entry with the key", key);

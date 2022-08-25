@@ -9,8 +9,9 @@ const router = express.Router();
 * @pathparam - key - cache key
 * @returns cache entry value in form of { value: <cache entry string value> }
 * */
-router.get("/:key", async function (req, res, next) {
+router.get("/:key", async function (req, res) {
   const { value } = await CacheEntryService.getCacheEntryByKey(req.params.key);
+
   res.json({ value });
 });
 
@@ -18,7 +19,7 @@ router.get("/:key", async function (req, res, next) {
 * route for getting all existing cache keys
 * @returns cache entry values in form of { value: [ <cache entry string value 1>, <cache entry string value 2>, ... ] }
 * */
-router.get("/", async function (req, res, next) {
+router.get("/", async function (req, res) {
   const serviceCallResult = await CacheEntryService.getAllCacheEntries();
   const cacheKeys = mapCacheEntriesObjectsToStrings(serviceCallResult);
   res.json({ value: cacheKeys });
@@ -30,8 +31,8 @@ router.get("/", async function (req, res, next) {
 * @bodyparam - { value: <cache string value> }
 * @returns cache entry value in form of { value: <cache entry string value> }
 * */
-router.post("/:key", async function (req, res, next) {
-  const serviceResultCall = await CacheEntryService.createOrUpdateCacheEntryForKey(req.params.key, req.body.value);
+router.post("/:key", async function (req, res) {
+  await CacheEntryService.createOrUpdateCacheEntryForKey(req.params.key, req.body.value);
   res.json({ value: req.body.value });
 });
 
@@ -40,7 +41,7 @@ router.post("/:key", async function (req, res, next) {
 * @pathparam - key - cache key
 * @returns { ok: true }
 * */
-router.delete("/:key", async function (req, res, next) {
+router.delete("/:key", async function (req, res) {
   const serviceCallResult = await CacheEntryService.deleteOneCacheEntry(req.params.key);
   res.json({ ok: !!serviceCallResult });
 });
@@ -49,7 +50,7 @@ router.delete("/:key", async function (req, res, next) {
 * route for deleting existing cache entry
 * @returns { ok: true }
 * */
-router.delete("/", async function (req, res, next) {
+router.delete("/", async function (req, res) {
   const serviceCallResult = await CacheEntryService.deleteAllCacheEntries();
   res.json({ ok: !!serviceCallResult });
 });

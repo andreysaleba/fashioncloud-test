@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
-const { DEFAULT_CACHE_EXPIRATION_VALUE } = require("../utils/const");
 
+// Default cache expiration value in millis
+const DEFAULT_CACHE_EXPIRATION_VALUE = 500;
 /*
 *  Cache entry object containing 3 value fields:
 *  1. Key - cache key string.

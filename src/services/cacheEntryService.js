@@ -1,6 +1,8 @@
 const CacheEntry = require("../models/cacheEntry");
-const { randomString } = require("../utils/functions");
-const { CACHED_OBJECTS_LIMIT } = require("../utils/const");
+const { randomString } = require("../utils/helperFunctions");
+
+// Maximum limit of cached objects
+const CACHED_OBJECTS_LIMIT = 5;
 
 /**
  * Class containing static methods for interacting with stored cache entries

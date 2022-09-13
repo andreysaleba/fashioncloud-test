@@ -1,9 +1,6 @@
-const dotenv = require("dotenv");
-const CacheEntryService = require("../services/cacheEntryService");
-const CacheEntry = require("../models/cacheEntry");
+const CacheEntryService = require("../src/services/cacheEntryService");
+const CacheEntry = require("../src/models/cacheEntry");
 const { setupMongooseConnection, teardownMongooseConnection, setupTestData } = require("./utils");
-
-dotenv.config();
 
 let cacheEntries = [];
 

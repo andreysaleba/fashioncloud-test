@@ -1,5 +1,8 @@
-const CacheEntry = require("../models/cacheEntry");
 const mongoose = require("mongoose");
+const CacheEntry = require("../src/models/cacheEntry");
+const dotenv = require("dotenv");
+
+dotenv.config({ path: ".env.test" });
 
 function setupMongooseConnection () {
   return mongoose.connect(process.env.MONGODB_URL_STRING);

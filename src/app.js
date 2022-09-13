@@ -1,5 +1,6 @@
 const createError = require("http-errors");
 const express = require("express");
+require('express-async-errors');
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const logger = require("morgan");
@@ -29,7 +30,7 @@ async function initApp () {
   });
 
 // error handler
-  app.use(function (err, req, res, next) {
+  app.use(function (err, req, res) {
     // render the error page
     res.status(err.status || 500);
     res.send("error");

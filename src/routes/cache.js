@@ -1,6 +1,6 @@
 const express = require("express");
 const CacheEntryService = require("../services/cacheEntryService");
-const { mapCacheEntriesObjectsToStrings } = require("../utils/functions");
+const { mapCacheEntriesObjectsToStrings } = require("../utils/helperFunctions");
 
 const router = express.Router();
 
@@ -32,8 +32,15 @@ router.get("/", async function (req, res) {
 * @returns cache entry value in form of { value: <cache entry string value> }
 * */
 router.post("/:key", async function (req, res) {
-  await CacheEntryService.createOrUpdateCacheEntryForKey(req.params.key, req.body.value);
-  res.json({ value: req.body.value });
+  // could be done better with express-validator
+  const value = req.body.value;
+  if (value) {
+    await CacheEntryService.createOrUpdateCacheEntryForKey(req.params.key, req.body.value);
+    res.json({ value: req.body.value });
+  } else {
+    res.status(400);
+    res.send("Value must be specified");
+  }
 });
 
 /*
